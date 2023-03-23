@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, CanonicalAddr, Decimal256, Deps, Order, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, Decimal256, Deps, Order, StdResult, Storage, Uint128, CanonicalAddr};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -22,9 +22,16 @@ pub struct SwapConfig {
 }
 // End
 
+pub const OLD_CONFIG: Item<OldConfig> = Item::new("\u{0}\u{6}config");
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct OldConfig {
+    pub hub_contract: CanonicalAddr,
+    pub reward_denom: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
-    pub hub_contract: CanonicalAddr,
+    pub hub_contract: Addr,
     pub reward_denom: String,
 }
 

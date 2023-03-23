@@ -13,9 +13,8 @@ use crate::swap::create_swap_msgs;
 pub fn execute_swap(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
     
     let config = read_config(deps.storage)?;
-    let sender_raw = deps.api.addr_canonicalize(info.sender.as_str())?;
 
-    if sender_raw != config.hub_contract {
+    if info.sender.as_str() != config.hub_contract {
         return Err(StdError::generic_err("unauthorized"));
     }
 
@@ -59,7 +58,7 @@ pub fn execute_update_global_index(
     let mut state: State = read_state(deps.storage)?;
 
     // Permission check
-    if config.hub_contract != deps.api.addr_canonicalize(info.sender.as_str())? {
+    if config.hub_contract != info.sender.as_str() {
         return Err(StdError::generic_err("Unauthorized"));
     }
 

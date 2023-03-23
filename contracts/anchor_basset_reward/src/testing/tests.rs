@@ -23,7 +23,7 @@ use cosmwasm_std::{
 };
 
 use crate::contract::{execute, instantiate, migrate, query};
-use crate::state::{store_holder, store_state, Holder, State};
+use crate::state::{store_holder, store_state, Holder, State, OLD_CONFIG, OldConfig, CONFIG};
 use crate::swap::create_swap_msgs;
 use crate::testing::mock_querier::{
     mock_dependencies, MOCK_HUB_CONTRACT_ADDR, MOCK_TOKEN_CONTRACT_ADDR,
@@ -928,5 +928,15 @@ fn test_migrate() {
         amount: Uint128::new(100u128),
     }]);
 
-    migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap();
+    let mut_deps = deps.as_mut();
+
+    OLD_CONFIG.save(mut_deps.storage, &OldConfig{
+        hub_contract: mut_deps.api.addr_canonicalize("memememe").unwrap(),
+        reward_denom: "stable?".to_string()
+    }).unwrap();
+
+    migrate(mut_deps, mock_env(), MigrateMsg {}).unwrap();
+
+    let new_config = CONFIG.load(deps.as_ref().storage).unwrap();
+    assert_eq!(new_config.hub_contract.to_string(), "memememe");
 }
