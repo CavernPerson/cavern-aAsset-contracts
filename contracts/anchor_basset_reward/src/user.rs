@@ -10,8 +10,6 @@ use cosmwasm_std::{
     attr, BankMsg, Coin, CosmosMsg, Decimal256, Deps, DepsMut, Env, MessageInfo, Response, StdError,
     StdResult, Uint128, Uint256
 };
-
-use basset::deduct_tax;
 use std::str::FromStr;
 
 pub fn execute_claim_rewards(
@@ -53,13 +51,11 @@ pub fn execute_claim_rewards(
 
     let bank_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
         to_address: recipient.to_string(),
-        amount: vec![deduct_tax(
-            &deps.querier,
+        amount: vec![
             Coin {
                 denom: config.reward_denom,
                 amount: rewards.try_into()?,
-            },
-        )?],
+            }],
     });
 
     let res = Response::new()
@@ -209,12 +205,12 @@ fn calculate_decimal_rewards(
 
 // calculate the reward with decimal
 fn get_decimals(value: Decimal256) -> StdResult<Decimal256> {
-    let stringed: &str = &*value.to_string();
-    let parts: &[&str] = &*stringed.split('.').collect::<Vec<&str>>();
+    let stringed: &str = &value.to_string();
+    let parts: &[&str] = &stringed.split('.').collect::<Vec<&str>>();
     match parts.len() {
         1 => Ok(Decimal256::zero()),
         2 => {
-            let decimals = Decimal256::from_str(&*("0.".to_owned() + parts[1]))?;
+            let decimals = Decimal256::from_str(&("0.".to_owned() + parts[1]))?;
             Ok(decimals)
         }
         _ => Err(StdError::generic_err("Unexpected number of dots")),
