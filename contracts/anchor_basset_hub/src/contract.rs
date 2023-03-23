@@ -33,12 +33,10 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let sender = info.sender.clone();
-    let _sndr_raw = deps.api.addr_validate(sender.as_str())?;
 
     // store config
     let data = Config {
-        creator: deps.api.addr_validate(info.sender.as_str())?,
+        creator: info.sender,
         reward_contract: None,
         token_contract: None,
         validators_registry_contract: None
@@ -137,13 +135,12 @@ pub fn execute_redelegate_proxy(
     src_validator: String,
     redelegations: Vec<(String, Coin)>,
 ) -> StdResult<Response> {
-    let sender_contract_addr = deps.api.addr_validate(info.sender.as_str())?;
     let conf = CONFIG.load(deps.storage)?;
     let validators_registry_contract = conf.validators_registry_contract.ok_or_else(|| {
         StdError::generic_err("the validator registry contract must have been registered")
     })?;
 
-    if sender_contract_addr != validators_registry_contract && sender_contract_addr != conf.creator
+    if info.sender != validators_registry_contract && info.sender != conf.creator
     {
         return Err(StdError::generic_err("unauthorized"));
     }

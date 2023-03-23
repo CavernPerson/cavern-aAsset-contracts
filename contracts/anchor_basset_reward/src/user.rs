@@ -123,7 +123,7 @@ pub fn execute_decrease_balance(
 
     // Check sender is token contract
     if query_token_contract(deps.as_ref(), config.hub_contract)?
-        != deps.api.addr_validate(info.sender.as_str())?
+        != info.sender
     {
         return Err(StdError::generic_err("unauthorized"));
     }

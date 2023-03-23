@@ -220,7 +220,7 @@ fn query_validators(deps: Deps) -> StdResult<Vec<ValidatorResponse>> {
     let hub_address = deps.api.addr_humanize(&config.hub_contract)?;
 
     let mut delegations = HashMap::new();
-    for delegation in deps.querier.query_all_delegations(&hub_address)? {
+    for delegation in deps.querier.query_all_delegations(hub_address)? {
         delegations.insert(delegation.validator, delegation.amount.amount);
     }
 
