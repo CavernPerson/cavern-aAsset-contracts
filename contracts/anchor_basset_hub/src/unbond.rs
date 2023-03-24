@@ -145,7 +145,6 @@ pub fn execute_withdraw_unbonded(
     info: MessageInfo,
 ) -> StdResult<Response> {
     let sender_human = info.sender;
-    let contract_address = env.contract.address.clone();
 
     // read params
     let params = PARAMETERS.load(deps.storage)?;
@@ -193,7 +192,7 @@ pub fn execute_withdraw_unbonded(
     Ok(Response::new()
         .add_attributes(vec![
             attr("action", "finish_burn"),
-            attr("from", contract_address),
+            attr("from", sender_human),
             attr("amount", withdraw_amount),
         ])
         .add_message(bank_msg))
