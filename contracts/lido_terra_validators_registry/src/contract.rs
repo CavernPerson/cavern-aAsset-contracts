@@ -43,6 +43,10 @@ pub fn instantiate(
     )?;
 
     for v in msg.registry {
+        // We verify the validator is registered as such
+        if deps.querier.query_validator(&v.address)?.is_none(){
+            return Err(StdError::generic_err("Address not registered as a valid validator"));
+        }
         REGISTRY.save(deps.storage, v.address.as_str().as_bytes(), &v)?;
     }
 
@@ -109,6 +113,10 @@ pub fn add_validator(
     let hub_address = deps.api.addr_humanize(&config.hub_contract)?;
     if info.sender != owner_address && info.sender != hub_address {
         return Err(StdError::generic_err("unauthorized"));
+    }
+    // We verify the validator is registered as such
+    if deps.querier.query_validator(&validator.address)?.is_none(){
+        return Err(StdError::generic_err("Address not registered as a valid validator"));
     }
 
     REGISTRY.save(
