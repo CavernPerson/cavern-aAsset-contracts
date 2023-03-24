@@ -162,6 +162,7 @@ pub struct ConfigResponse {
     pub owner: String,
     pub reward_contract: Option<String>,
     pub token_contract: Option<String>,
+    pub validator_registry_contract: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

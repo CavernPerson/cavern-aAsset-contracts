@@ -209,6 +209,7 @@ fn proper_initialization() {
         owner: "owner1".to_string(),
         reward_contract: None,
         token_contract: None,
+        validator_registry_contract: None,
         //airdrop_registry_contract: None,
     };
 

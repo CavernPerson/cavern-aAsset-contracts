@@ -343,6 +343,7 @@ fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         owner: config.creator.to_string(),
         reward_contract: reward,
         token_contract: token,
+        validator_registry_contract: config.validators_registry_contract.map(|x| x.to_string()),
         //airdrop_registry_contract: airdrop,
     })
 }
