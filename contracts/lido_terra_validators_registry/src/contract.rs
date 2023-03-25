@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::convert::TryInto;
 use std::collections::HashMap;
+
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -26,6 +28,9 @@ use crate::common::calculate_delegations;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::registry::{Config, Validator, ValidatorResponse, CONFIG, REGISTRY};
 use basset::hub::ExecuteMsg::{RedelegateProxy, UpdateGlobalIndex};
+
+const MAX_NUMBER_OF_VALIDATORS: u64 = 30;
+
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -41,6 +46,10 @@ pub fn instantiate(
             hub_contract: deps.api.addr_canonicalize(msg.hub_contract.as_str())?,
         },
     )?;
+
+    if msg.registry.len() > 30{
+        return Err(StdError::generic_err(format!("Can't have more than {} registered validators", MAX_NUMBER_OF_VALIDATORS)));
+    }
 
     for v in msg.registry {
         // We verify the validator is registered as such
@@ -121,6 +130,12 @@ pub fn add_validator(
         return Err(StdError::generic_err(
             "Address not registered as a valid validator",
         ));
+    }
+
+    // We verify the number of registered validators is not above MAX_NUMBER_OF_VALIDATORS
+    let validators = query_validators(deps.as_ref())?;
+    if validators.len() >= MAX_NUMBER_OF_VALIDATORS.try_into().map_err(|_|StdError::generic_err("Error parsing u64 to usize"))?{
+        return Err(StdError::generic_err(format!("Can't have more than {} registered validators", MAX_NUMBER_OF_VALIDATORS)));
     }
 
     REGISTRY.save(
