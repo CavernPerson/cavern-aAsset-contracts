@@ -37,6 +37,12 @@ pub fn execute_update_params(
         reward_denom: params.reward_denom,
     };
 
+    if new_params.peg_recovery_fee > Decimal::one(){
+        return Err(StdError::generic_err(
+            "peg_recovery_fee can not be greater than 1",
+        ));
+    }
+
     PARAMETERS.save(deps.storage, &new_params)?;
 
     Ok(Response::new().add_attributes(vec![attr("action", "update_params")]))
