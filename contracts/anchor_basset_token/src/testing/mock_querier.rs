@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use basset::hub::Config;
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{
@@ -6,6 +5,7 @@ use cosmwasm_std::{
     QueryRequest, SystemError, SystemResult, WasmQuery,
 };
 use cosmwasm_storage::to_length_prefixed;
+use std::marker::PhantomData;
 
 pub const MOCK_HUB_CONTRACT_ADDR: &str = "hub";
 pub const MOCK_REWARD_CONTRACT_ADDR: &str = "reward";
@@ -65,8 +65,10 @@ impl WasmMockQuerier {
                                 api.addr_validate(&String::from(MOCK_TOKEN_CONTRACT_ADDR))
                                     .unwrap(),
                             ),
-                            validators_registry_contract: Some(api.addr_validate(&String::from(MOCK_REGISTRY_CONTRACT_ADDR)).unwrap()),
-                            
+                            validators_registry_contract: Some(
+                                api.addr_validate(&String::from(MOCK_REGISTRY_CONTRACT_ADDR))
+                                    .unwrap(),
+                            ),
                             /*
                             airdrop_registry_contract: Some(
                                 api.addr_validate(&String::from("airdrop")).unwrap(),

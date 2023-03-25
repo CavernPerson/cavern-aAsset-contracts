@@ -1,27 +1,25 @@
+use cosmwasm_std::entry_point;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::Coin;
-use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     attr, from_binary, to_binary, Addr, Binary, CosmosMsg, Decimal, Deps, DepsMut, DistributionMsg,
     Env, MessageInfo, QueryRequest, Response, StakingMsg, StdError, StdResult, SubMsg, Uint128,
     WasmMsg, WasmQuery,
 };
 
-use crate::config::{
-    execute_update_config,
-    execute_update_params,
-};
+use crate::config::{execute_update_config, execute_update_params};
 
 use crate::state::{
-    all_unbond_history, get_unbond_requests, query_get_finished_amount,
-    CurrentBatch, Parameters, CONFIG, CURRENT_BATCH, PARAMETERS, STATE,
+    all_unbond_history, get_unbond_requests, query_get_finished_amount, CurrentBatch, Parameters,
+    CONFIG, CURRENT_BATCH, PARAMETERS, STATE,
 };
 use crate::unbond::{execute_unbond, execute_withdraw_unbonded};
 
 use crate::bond::execute_bond;
 use basset::hub::{
     AllHistoryResponse, Config, ConfigResponse, CurrentBatchResponse, Cw20HookMsg, ExecuteMsg,
-    InstantiateMsg, QueryMsg, State, StateResponse, UnbondRequestsResponse, WithdrawableUnbondedResponse,
+    InstantiateMsg, QueryMsg, State, StateResponse, UnbondRequestsResponse,
+    WithdrawableUnbondedResponse,
 };
 use basset::reward::ExecuteMsg::{SwapToRewardDenom, UpdateGlobalIndex};
 use cw20::{Cw20QueryMsg, Cw20ReceiveMsg, TokenInfoResponse};
@@ -33,14 +31,12 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-
     // store config
     let data = Config {
         creator: info.sender,
         reward_contract: None,
         token_contract: None,
-        validators_registry_contract: None
-        //airdrop_registry_contract: None,
+        validators_registry_contract: None, //airdrop_registry_contract: None,
     };
     CONFIG.save(deps.storage, &data)?;
 
@@ -86,7 +82,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::Bond {} => execute_bond(deps, env, info),
-        ExecuteMsg::UpdateGlobalIndex {  } => {
+        ExecuteMsg::UpdateGlobalIndex {} => {
             execute_update_global(deps, env) //airdrop_hooks)
         }
         ExecuteMsg::WithdrawUnbonded {} => execute_withdraw_unbonded(deps, env, info),
@@ -140,8 +136,7 @@ pub fn execute_redelegate_proxy(
         StdError::generic_err("the validator registry contract must have been registered")
     })?;
 
-    if info.sender != validators_registry_contract && info.sender != conf.creator
-    {
+    if info.sender != validators_registry_contract && info.sender != conf.creator {
         return Err(StdError::generic_err("unauthorized"));
     }
 
@@ -174,8 +169,9 @@ pub fn receive_cw20(
             // only token contract can execute this message
             let conf = CONFIG.load(deps.storage)?;
             if deps.api.addr_validate(contract_addr.as_str())?
-                != conf
-                    .token_contract.ok_or_else(|| StdError::generic_err("the token contract must have been registered"))?
+                != conf.token_contract.ok_or_else(|| {
+                    StdError::generic_err("the token contract must have been registered")
+                })?
             {
                 return Err(StdError::generic_err("unauthorized"));
             }
@@ -196,7 +192,8 @@ pub fn execute_update_global(
 
     let config = CONFIG.load(deps.storage)?;
     let reward_addr = config
-                .reward_contract.ok_or_else(|| StdError::generic_err("the reward contract must have been registered"))?
+        .reward_contract
+        .ok_or_else(|| StdError::generic_err("the reward contract must have been registered"))?
         .to_string();
 
     /*
@@ -215,7 +212,6 @@ pub fn execute_update_global(
     // Send withdraw message
     let mut withdraw_msgs = withdraw_all_rewards(&deps, env.contract.address.clone())?;
     messages.append(&mut withdraw_msgs);
-    
 
     // Send Swap message to reward contract
     let swap_msg = SwapToRewardDenom {};
@@ -273,8 +269,8 @@ pub fn slashing(deps: &mut DepsMut, env: Env) -> StdResult<()> {
     // Check the actual bonded amount
     let delegations = deps.querier.query_all_delegations(env.contract.address)?;
     if delegations.is_empty() {
-        return Ok(())
-    } 
+        return Ok(());
+    }
 
     let mut actual_total_bonded = Uint128::zero();
     for delegation in delegations {
@@ -390,10 +386,10 @@ fn query_params(deps: Deps) -> StdResult<Parameters> {
 }
 
 pub(crate) fn query_total_issued(deps: Deps) -> StdResult<Uint128> {
-    let token_address = 
-            CONFIG
-                .load(deps.storage)?
-                .token_contract.ok_or_else(|| StdError::generic_err("token contract must have been registered"))?
+    let token_address = CONFIG
+        .load(deps.storage)?
+        .token_contract
+        .ok_or_else(|| StdError::generic_err("token contract must have been registered"))?
         .to_string();
     let token_info: TokenInfoResponse =
         deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {

@@ -23,7 +23,7 @@ use cosmwasm_std::{
 };
 
 use crate::contract::{execute, instantiate, migrate, query};
-use crate::state::{store_holder, store_state, Holder, State, OLD_CONFIG, OldConfig, CONFIG};
+use crate::state::{store_holder, store_state, Holder, OldConfig, State, CONFIG, OLD_CONFIG};
 use crate::swap::create_swap_msgs;
 use crate::testing::mock_querier::{
     mock_dependencies, MOCK_HUB_CONTRACT_ADDR, MOCK_TOKEN_CONTRACT_ADDR,
@@ -362,7 +362,8 @@ fn increase_balance_with_decimals() {
     .unwrap();
     let holder_response: HolderResponse = from_binary(&res).unwrap();
     let index = Decimal256::from_ratio(Uint128::new(100000), Uint128::new(11));
-    let user_pend_reward = Decimal256::from_str("11").unwrap() * (holder_response.index - Decimal256::zero());
+    let user_pend_reward =
+        Decimal256::from_str("11").unwrap() * (holder_response.index - Decimal256::zero());
     assert_eq!(
         holder_response,
         HolderResponse {
@@ -930,10 +931,15 @@ fn test_migrate() {
 
     let mut_deps = deps.as_mut();
 
-    OLD_CONFIG.save(mut_deps.storage, &OldConfig{
-        hub_contract: mut_deps.api.addr_canonicalize("memememe").unwrap(),
-        reward_denom: "stable?".to_string()
-    }).unwrap();
+    OLD_CONFIG
+        .save(
+            mut_deps.storage,
+            &OldConfig {
+                hub_contract: mut_deps.api.addr_canonicalize("memememe").unwrap(),
+                reward_denom: "stable?".to_string(),
+            },
+        )
+        .unwrap();
 
     migrate(mut_deps, mock_env(), MigrateMsg {}).unwrap();
 

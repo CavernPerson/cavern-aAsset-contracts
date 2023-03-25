@@ -1,5 +1,3 @@
-use lido_terra_validators_registry::common::calculate_undelegations;
-use lido_terra_validators_registry::registry::ValidatorResponse;
 use crate::contract::{query_total_issued, slashing};
 use crate::state::{
     get_finished_amount, get_unbond_batches, read_unbond_history, remove_unbond_wait_list,
@@ -11,6 +9,8 @@ use cosmwasm_std::{
     Response, StakingMsg, StdError, StdResult, Storage, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
+use lido_terra_validators_registry::common::calculate_undelegations;
+use lido_terra_validators_registry::registry::ValidatorResponse;
 use signed_integer::SignedInt;
 
 /// This message must be call by receive_cw20
@@ -39,8 +39,7 @@ pub(crate) fn execute_unbond(
 
     // Collect all the requests within a epoch period
     // Apply peg recovery fee
-    let amount_with_fee: Uint128 = 
-    if state.exchange_rate < threshold {
+    let amount_with_fee: Uint128 = if state.exchange_rate < threshold {
         let max_peg_fee = amount * recovery_fee;
         let required_peg_fee = ((total_supply + current_batch.requested_with_fee)
             .checked_sub(state.total_bond_amount))?;
@@ -84,11 +83,8 @@ pub(crate) fn execute_unbond(
         let delegator = env.contract.address;
 
         // Send undelegated requests to possibly more than one validators
-        let mut undelegated_msgs = pick_validator(
-            deps.as_ref(),
-            undelegation_amount,
-            delegator.to_string(),
-        )?;
+        let mut undelegated_msgs =
+            pick_validator(deps.as_ref(), undelegation_amount, delegator.to_string())?;
 
         messages.append(&mut undelegated_msgs);
 
@@ -122,7 +118,8 @@ pub(crate) fn execute_unbond(
     // Send Burn message to token contract
     let config = CONFIG.load(deps.storage)?;
     let token_address = &config
-            .token_contract.ok_or_else(|| StdError::generic_err("the token contract must have been registered"))?;
+        .token_contract
+        .ok_or_else(|| StdError::generic_err("the token contract must have been registered"))?;
 
     let burn_msg = Cw20ExecuteMsg::Burn { amount };
     messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
@@ -310,23 +307,16 @@ fn process_withdraw_rate(
     Ok(())
 }
 
-fn pick_validator(
-    deps: Deps,
-    claim: Uint128,
-    delegator: String,
-) -> StdResult<Vec<CosmosMsg>> {
+fn pick_validator(deps: Deps, claim: Uint128, delegator: String) -> StdResult<Vec<CosmosMsg>> {
     //read params
     let params = PARAMETERS.load(deps.storage)?;
     let coin_denom = params.underlying_coin_denom;
 
     let mut messages: Vec<CosmosMsg> = vec![];
 
-    let all_delegations = deps
-        .querier
-        .query_all_delegations(delegator)?;
+    let all_delegations = deps.querier.query_all_delegations(delegator)?;
 
     // Instead of picking a random validator, we undelegate across all validators
-
 
     let mut validators = all_delegations
         .iter()

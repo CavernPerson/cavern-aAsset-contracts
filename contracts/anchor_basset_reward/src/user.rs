@@ -1,14 +1,14 @@
-use std::convert::TryInto;
 use crate::querier::query_token_contract;
 use crate::state::{
     read_config, read_holder, read_holders, read_state, store_holder, store_state, Config, Holder,
     State,
 };
 use basset::reward::{AccruedRewardsResponse, HolderResponse, HoldersResponse};
+use std::convert::TryInto;
 
 use cosmwasm_std::{
-    attr, BankMsg, Coin, CosmosMsg, Decimal256, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, Uint128, Uint256
+    attr, BankMsg, Coin, CosmosMsg, Decimal256, Deps, DepsMut, Env, MessageInfo, Response,
+    StdError, StdResult, Uint128, Uint256,
 };
 use std::str::FromStr;
 
@@ -51,11 +51,10 @@ pub fn execute_claim_rewards(
 
     let bank_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
         to_address: recipient.to_string(),
-        amount: vec![
-            Coin {
-                denom: config.reward_denom,
-                amount: rewards.try_into()?,
-            }],
+        amount: vec![Coin {
+            denom: config.reward_denom,
+            amount: rewards.try_into()?,
+        }],
     });
 
     let res = Response::new()
@@ -122,9 +121,7 @@ pub fn execute_decrease_balance(
     let address_raw = deps.api.addr_validate(&address)?;
 
     // Check sender is token contract
-    if query_token_contract(deps.as_ref(), config.hub_contract)?
-        != info.sender
-    {
+    if query_token_contract(deps.as_ref(), config.hub_contract)? != info.sender {
         return Err(StdError::generic_err("unauthorized"));
     }
 
@@ -168,7 +165,9 @@ pub fn query_accrued_rewards(deps: Deps, address: String) -> StdResult<AccruedRe
 
     let rewards = all_reward_with_decimals * Uint256::one();
 
-    Ok(AccruedRewardsResponse { rewards : rewards.try_into()? })
+    Ok(AccruedRewardsResponse {
+        rewards: rewards.try_into()?,
+    })
 }
 
 pub fn query_holder(deps: Deps, address: String) -> StdResult<HolderResponse> {
@@ -198,7 +197,7 @@ fn calculate_decimal_rewards(
     user_balance: Uint128,
 ) -> StdResult<Decimal256> {
     let decimal_balance = Decimal256::from_ratio(user_balance, Uint128::new(1));
-    Ok((global_index - user_index)*decimal_balance)
+    Ok((global_index - user_index) * decimal_balance)
 }
 
 // calculate the reward with decimal

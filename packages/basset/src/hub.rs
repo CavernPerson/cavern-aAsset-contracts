@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Addr, Decimal, Uint128};
+use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -77,8 +77,7 @@ pub enum ExecuteMsg {
     /// Receives `amount` in underlying coin denom from sender.
     /// Delegate `amount` to multiple validators.
     /// Issue `amount` / exchange_rate for the user.
-    Bond {
-    },
+    Bond {},
 
     /// Update global index
     UpdateGlobalIndex {
@@ -99,7 +98,6 @@ pub enum ExecuteMsg {
     /// Unbond the underlying coin denom.
     /// Burn the received basset token.
     Receive(Cw20ReceiveMsg),
-
 
     ////////////////////
     /// internal operations
@@ -162,7 +160,7 @@ pub struct ConfigResponse {
     pub owner: String,
     pub reward_contract: Option<String>,
     pub token_contract: Option<String>,
-    pub validator_registry_contract: Option<String>
+    pub validator_registry_contract: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

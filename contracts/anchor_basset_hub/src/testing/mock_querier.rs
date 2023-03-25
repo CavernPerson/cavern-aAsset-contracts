@@ -1,16 +1,16 @@
-use cw20::TokenInfoResponse;
-use lido_terra_validators_registry::registry::ValidatorResponse;
-use std::marker::PhantomData;
-use cosmwasm_std::Empty;
 use basset::hub::Config;
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage};
+use cosmwasm_std::Empty;
 use cosmwasm_std::{
     from_binary, from_slice, to_binary, AllBalanceResponse, Api, BalanceResponse, BankQuery,
     CanonicalAddr, Coin, ContractResult, Decimal, FullDelegation, OwnedDeps, Querier,
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator, WasmQuery,
 };
 use cosmwasm_storage::to_length_prefixed;
+use cw20::TokenInfoResponse;
+use lido_terra_validators_registry::registry::ValidatorResponse;
 use std::collections::HashMap;
+use std::marker::PhantomData;
 
 use cw20::{BalanceResponse as Cw20BalanceResponse, Cw20QueryMsg};
 
@@ -70,7 +70,9 @@ impl WasmMockQuerier {
                         creator: api.addr_validate("owner1").unwrap(),
                         reward_contract: Some(api.addr_validate("reward").unwrap()),
                         token_contract: Some(api.addr_validate("token").unwrap()),
-                        validators_registry_contract: Some(api.addr_validate("validator_registry").unwrap()),
+                        validators_registry_contract: Some(
+                            api.addr_validate("validator_registry").unwrap(),
+                        ),
                         //airdrop_registry_contract: Some(api.addr_validate("airdrop").unwrap()),
                     };
                     SystemResult::Ok(ContractResult::from(to_binary(
@@ -171,24 +173,29 @@ impl WasmMockQuerier {
             QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }) => {
                 println!("{:?}", contract_addr);
                 // First we check that the contract call is made to the validator registry
-                if contract_addr == MOCK_REGISTRY_CONTRACT{
+                if contract_addr == MOCK_REGISTRY_CONTRACT {
                     match from_binary(msg).unwrap() {
-                        QueryValidators::GetValidatorsForDelegation{} => {
+                        QueryValidators::GetValidatorsForDelegation {} => {
+                            let validators: Vec<ValidatorResponse> = self
+                                .validators_querier
+                                .validators
+                                .iter()
+                                .map(|(validator, delegation)| {
+                                    println!("QUeried {:?} - {:?}", delegation, validator);
+                                    ValidatorResponse {
+                                        total_delegated: *delegation,
+                                        address: validator.clone(),
+                                    }
+                                })
+                                .collect();
 
-                            let validators: Vec<ValidatorResponse> = self.validators_querier.validators.iter().map(|(validator, delegation)|{
-                                println!("QUeried {:?} - {:?}", delegation, validator);
-                                ValidatorResponse{
-                                    total_delegated: *delegation,
-                                    address: validator.clone()
-                                }
-                            }).collect();
-
-                            return SystemResult::Ok(ContractResult::Ok(to_binary(&validators).unwrap()));
-                        },
+                            return SystemResult::Ok(ContractResult::Ok(
+                                to_binary(&validators).unwrap(),
+                            ));
+                        }
                         _ => panic!("No this isn't implemented in tests"),
                     }
                 }
-
 
                 match from_binary(msg).unwrap() {
                     Cw20QueryMsg::TokenInfo {} => {
@@ -332,10 +339,7 @@ pub(crate) fn balances_to_map(
     balances_map
 }
 
-pub(crate) fn validators_to_map(
-     validators: &[(&String, Uint128)],
-) -> HashMap<String, Uint128> {
-
+pub(crate) fn validators_to_map(validators: &[(&String, Uint128)]) -> HashMap<String, Uint128> {
     let mut validators_map: HashMap<String, Uint128> = HashMap::new();
     for (addr, delegation) in validators.iter() {
         validators_map.insert(addr.to_string(), *delegation);

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use cosmwasm_std::Decimal;
-use cosmwasm_std::ValidatorResponse;
 use crate::registry::ValidatorResponse as RegistryValidator;
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage};
-use cosmwasm_std::{Empty, StakingQuery};
+use cosmwasm_std::Decimal;
+use cosmwasm_std::ValidatorResponse;
 use cosmwasm_std::{
     from_slice, to_binary, Coin, ContractResult, FullDelegation, OwnedDeps, Querier, QuerierResult,
     QueryRequest, SystemError, Validator, WasmQuery,
 };
+use cosmwasm_std::{Empty, StakingQuery};
 
 pub const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 
@@ -72,13 +72,14 @@ impl WasmMockQuerier {
                 QuerierResult::Ok(ContractResult::from(to_binary(&validators)))
             }
             QueryRequest::Staking(StakingQuery::Validator { address }) => {
-                QuerierResult::Ok(
-                    ContractResult::from(to_binary(&ValidatorResponse{
-                        validator:Some(Validator { 
-                            address: address.to_string(), 
-                            commission: Decimal::zero(), max_commission: Decimal::zero(), max_change_rate: Decimal::zero() })
-                    }))
-                )
+                QuerierResult::Ok(ContractResult::from(to_binary(&ValidatorResponse {
+                    validator: Some(Validator {
+                        address: address.to_string(),
+                        commission: Decimal::zero(),
+                        max_commission: Decimal::zero(),
+                        max_change_rate: Decimal::zero(),
+                    }),
+                })))
             }
             _ => self.base.handle_query(request),
         }

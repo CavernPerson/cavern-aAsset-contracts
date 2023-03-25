@@ -294,13 +294,7 @@ fn remove_validator() {
                     msg,
                     funds: _,
                 }) => {
-                    assert_eq!(
-                        *msg.0,
-                        to_binary(&UpdateGlobalIndex {
-                        })
-                        .unwrap()
-                        .0
-                    );
+                    assert_eq!(*msg.0, to_binary(&UpdateGlobalIndex {}).unwrap().0);
                     assert_eq!(*contract_addr, String::from("hub_contract_address"));
                 }
                 _ => panic!("Unexpected message: {:?}", update_global_index),
@@ -400,13 +394,7 @@ fn remove_validator() {
                     msg,
                     funds: _,
                 }) => {
-                    assert_eq!(
-                        *msg.0,
-                        to_binary(&UpdateGlobalIndex {
-                        })
-                        .unwrap()
-                        .0
-                    );
+                    assert_eq!(*msg.0, to_binary(&UpdateGlobalIndex {}).unwrap().0);
                     assert_eq!(*contract_addr, String::from("hub_contract_address"));
                 }
                 _ => panic!("Unexpected message: {:?}", update_global_index),
@@ -489,13 +477,7 @@ fn remove_validator() {
                     msg,
                     funds: _,
                 }) => {
-                    assert_eq!(
-                        *msg.0,
-                        to_binary(&UpdateGlobalIndex {
-                        })
-                        .unwrap()
-                        .0
-                    );
+                    assert_eq!(*msg.0, to_binary(&UpdateGlobalIndex {}).unwrap().0);
                     assert_eq!(*contract_addr, String::from("hub_contract_address"));
                 }
                 _ => panic!("Unexpected message: {:?}", update_global_index),

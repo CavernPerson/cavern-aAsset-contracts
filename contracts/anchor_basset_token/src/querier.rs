@@ -15,9 +15,9 @@ pub fn query_reward_contract(deps: &DepsMut) -> StdResult<Addr> {
         key: Binary::from(to_length_prefixed(b"config")),
     }))?;
 
-    let address = config.reward_contract.ok_or_else(||StdError::generic_err(
-        "the reward contract must have been registered",
-    ))?;
+    let address = config
+        .reward_contract
+        .ok_or_else(|| StdError::generic_err("the reward contract must have been registered"))?;
 
     Ok(address)
 }

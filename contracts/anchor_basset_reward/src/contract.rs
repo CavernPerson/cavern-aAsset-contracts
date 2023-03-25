@@ -3,7 +3,8 @@ use cosmwasm_std::entry_point;
 
 use crate::global::{execute_swap, execute_update_global_index};
 use crate::state::{
-    read_config, read_state, store_config, store_state, Config, State, SwapConfig, SWAP_CONFIG, OLD_CONFIG, CONFIG,
+    read_config, read_state, store_config, store_state, Config, State, SwapConfig, CONFIG,
+    OLD_CONFIG, SWAP_CONFIG,
 };
 use crate::user::{
     execute_claim_rewards, execute_decrease_balance, execute_increase_balance,
@@ -98,13 +99,12 @@ fn query_state(deps: Deps) -> StdResult<StateResponse> {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
-
     // We need to migrate the hub_contract addr from canonical_addr to addr
     let old_config = OLD_CONFIG.load(deps.storage)?;
 
-    let new_config = Config{
+    let new_config = Config {
         hub_contract: deps.api.addr_humanize(&old_config.hub_contract)?,
-        reward_denom: old_config.reward_denom
+        reward_denom: old_config.reward_denom,
     };
 
     CONFIG.save(deps.storage, &new_config)?;

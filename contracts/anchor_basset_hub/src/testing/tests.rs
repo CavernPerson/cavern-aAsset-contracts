@@ -20,23 +20,22 @@ use cosmwasm_std::QueryRequest;
 use cosmwasm_std::{
     coin, from_binary, to_binary, Addr, Api, BankMsg, Coin, CosmosMsg, Decimal, DepsMut,
     DistributionMsg, Env, FullDelegation, MessageInfo, OwnedDeps, Querier, Response, StakingMsg,
-    StdError, Storage, SubMsg, Uint128, Validator, WasmMsg,WasmQuery
+    StdError, Storage, SubMsg, Uint128, Validator, WasmMsg, WasmQuery,
 };
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::testing::{mock_env, mock_info};
-use lido_terra_validators_registry::registry::ValidatorResponse as RegistryValidator;
 use lido_terra_validators_registry::msg::QueryMsg as QueryValidators;
+use lido_terra_validators_registry::registry::ValidatorResponse as RegistryValidator;
 
 use crate::contract::{execute, instantiate, query};
 use crate::unbond::execute_unbond;
 use basset::hub::QueryMsg;
 use basset::hub::{
     AllHistoryResponse, ConfigResponse, CurrentBatchResponse, ExecuteMsg, InstantiateMsg,
-    StateResponse, UnbondRequestsResponse,
-    WithdrawableUnbondedResponse,
+    StateResponse, UnbondRequestsResponse, WithdrawableUnbondedResponse,
 };
 
 use basset::hub::Cw20HookMsg::Unbond;
@@ -61,7 +60,6 @@ pub const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 pub const INITIAL_DEPOSIT_AMOUNT: Uint128 = Uint128::new(1000000u128);
 
 pub const MOCK_REGISTRY_CONTRACT: &str = "registry-contract";
-
 
 fn sample_validator(addr: String) -> Validator {
     Validator {
@@ -115,7 +113,6 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 }
 
 pub fn do_bond(deps: DepsMut, addr: String, amount: Uint128, _validator: Validator) {
-
     let validators: Vec<RegistryValidator> = deps
         .querier
         .query(&QueryRequest::Wasm(WasmQuery::Smart {
@@ -129,7 +126,6 @@ pub fn do_bond(deps: DepsMut, addr: String, amount: Uint128, _validator: Validat
     let info = mock_info(&addr, &[coin(amount.u128(), "uluna")]);
     let res = execute(deps, mock_env(), info, bond).unwrap();
     assert_eq!(validators.len() + 1, res.messages.len());
-
 }
 
 pub fn do_unbond(
@@ -245,12 +241,7 @@ fn proper_bond() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        deps.borrow_mut(),
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(deps.borrow_mut(), owner, reward_contract, token_contract);
 
     let _info = mock_info(addr1.as_str(), &[]);
     // set balance for hub contract
@@ -261,15 +252,14 @@ fn proper_bond() {
         "uluna",
     );
 
-    deps.querier.with_token_balances(&[(
-        &"token".to_string(),
-        &[],
-    )]);
+    deps.querier
+        .with_token_balances(&[(&"token".to_string(), &[])]);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     let info = mock_info(addr1.as_str(), &[coin(bond_amount.u128(), "uluna")]);
 
@@ -310,22 +300,20 @@ fn proper_bond() {
     }
 
     // We update the delegated total
-    deps.querier.with_validators(&[(&validator.address, bond_amount)]);
+    deps.querier
+        .with_validators(&[(&validator.address, bond_amount)]);
 
     // get total bonded
     let state = QueryMsg::State {};
     let query_state: StateResponse =
         from_binary(&query(deps.as_ref(), mock_env(), state).unwrap()).unwrap();
-    assert_eq!(
-        query_state.total_bond_amount,
-        bond_amount
-    );
+    assert_eq!(query_state.total_bond_amount, bond_amount);
     assert_eq!(query_state.exchange_rate, Decimal::one());
 
     // no-send funds
     let _validator = sample_validator(DEFAULT_VALIDATOR.to_string());
     let bob = "bob".to_string();
-    let failed_bond = ExecuteMsg::Bond { };
+    let failed_bond = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[]);
     let res = execute(deps.as_mut(), mock_env(), info, failed_bond);
@@ -337,7 +325,7 @@ fn proper_bond() {
     //send other tokens than luna funds
     let _validator = sample_validator(DEFAULT_VALIDATOR.to_string());
     let bob = "bob".to_string();
-    let failed_bond = ExecuteMsg::Bond { };
+    let failed_bond = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(10, "ukrt")]);
     let res = execute(deps.as_mut(), mock_env(), info, failed_bond.clone());
@@ -384,7 +372,8 @@ pub fn proper_update_global_index() {
     );
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     // fails if there is no delegation
     let reward_msg = ExecuteMsg::UpdateGlobalIndex {
@@ -476,15 +465,11 @@ pub fn proper_update_global_index_two_validators() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        deps.borrow_mut(),
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(deps.borrow_mut(), owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address.clone(), Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address.clone(), Uint128::zero())]);
 
     // bond
     do_bond(
@@ -500,7 +485,10 @@ pub fn proper_update_global_index_two_validators() {
 
     // register_validator
 
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero()),( &validator2.address, Uint128::zero())]);
+    deps.querier.with_validators(&[
+        (&validator.address, Uint128::zero()),
+        (&validator2.address, Uint128::zero()),
+    ]);
 
     // bond to the second validator
     do_bond(
@@ -564,15 +552,11 @@ pub fn proper_update_global_index_respect_one_registered_validator() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        deps.borrow_mut(),
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(deps.borrow_mut(), owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     // bond
     do_bond(
@@ -587,7 +571,10 @@ pub fn proper_update_global_index_respect_one_registered_validator() {
         .with_token_balances(&[(&"token".to_string(), &[(&addr1, &Uint128::new(10u128))])]);
 
     // register_validator 2 but will not bond anything to it
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero()),(&validator2.address, Uint128::zero())]);
+    deps.querier.with_validators(&[
+        (&validator.address, Uint128::zero()),
+        (&validator2.address, Uint128::zero()),
+    ]);
 
     //set delegation for query-all-delegation
     let delegations: [FullDelegation; 1] =
@@ -642,7 +629,8 @@ pub fn proper_receive() {
     );
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     // bond to the second validator
     do_bond(
@@ -733,10 +721,11 @@ pub fn proper_unbond() {
     );
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond = ExecuteMsg::Bond { };
+    let bond = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(10, "uluna")]);
 
@@ -948,8 +937,10 @@ pub fn proper_pick_validator() {
     );
 
     deps.querier.with_validators(&[
-        (&validator.address, Uint128::zero()),(&validator2.address, Uint128::zero()),(&validator3.address, Uint128::zero())]
-   );
+        (&validator.address, Uint128::zero()),
+        (&validator2.address, Uint128::zero()),
+        (&validator3.address, Uint128::zero()),
+    ]);
 
     // bond to a validator
     do_bond(
@@ -1116,10 +1107,11 @@ pub fn proper_pick_validator_respect_distributed_delegation() {
         token_contract.clone(),
     );
 
-    
     deps.querier.with_validators(&[
-        (&validator.address, Uint128::zero()),(&validator2.address, Uint128::zero()),(&validator3.address, Uint128::zero())
-        ]);
+        (&validator.address, Uint128::zero()),
+        (&validator2.address, Uint128::zero()),
+        (&validator3.address, Uint128::zero()),
+    ]);
 
     // bond to a validator
     do_bond(
@@ -1209,15 +1201,11 @@ pub fn proper_slashing() {
     let owner = "owner1".to_string();
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract.clone(),
-    );
+    init(&mut deps, owner, reward_contract, token_contract.clone());
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     //bond
     do_bond(
@@ -1245,7 +1233,7 @@ pub fn proper_slashing() {
     assert_eq!(query_exchange_rate.exchange_rate.to_string(), "0.9");
 
     //bond again to see the update exchange rate
-    let second_bond = ExecuteMsg::Bond { };
+    let second_bond = ExecuteMsg::Bond {};
 
     let info = mock_info(&addr1, &[coin(1000, "uluna")]);
 
@@ -1376,18 +1364,14 @@ pub fn proper_withdraw_unbonded() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(100, "uluna")]);
 
@@ -1567,18 +1551,14 @@ pub fn proper_withdraw_unbonded_respect_slashing() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(bond_amount.u128(), "uluna")]);
 
@@ -1721,18 +1701,14 @@ pub fn proper_withdraw_unbonded_respect_inactivity_slashing() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(bond_amount.u128(), "uluna")]);
 
@@ -1910,18 +1886,14 @@ pub fn proper_withdraw_unbond_with_dummies() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     let info = mock_info(&bob, &[coin(bond_amount.u128(), "uluna")]);
 
@@ -2075,12 +2047,7 @@ pub fn test_update_params() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     let invalid_info = mock_info("invalid", &[]);
     let res = execute(
@@ -2147,12 +2114,7 @@ pub fn proper_recovery_fee() {
     let bond_amount = Uint128::new(1000000u128);
     let unbond_amount = Uint128::new(100000u128);
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract.clone(),
-    );
+    init(&mut deps, owner, reward_contract, token_contract.clone());
 
     let creator_info = mock_info("owner1", &[]);
     let res = execute(deps.as_mut(), mock_env(), creator_info, update_prams).unwrap();
@@ -2168,10 +2130,11 @@ pub fn proper_recovery_fee() {
     assert_eq!(parmas.er_threshold.to_string(), "0.99");
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     //this will set the balance of the user in token contract
     deps.querier
@@ -2195,7 +2158,7 @@ pub fn proper_recovery_fee() {
 
     //Bond again to see the applied result
     let bob = "bob".to_string();
-    let bond_msg = ExecuteMsg::Bond { };
+    let bond_msg = ExecuteMsg::Bond {};
 
     deps.querier
         .with_token_balances(&[(&"token".to_string(), &[(&bob, &bond_amount)])]);
@@ -2373,7 +2336,7 @@ pub fn proper_update_config() {
     let config_query: ConfigResponse =
         from_binary(&query(deps.as_ref(), mock_env(), config).unwrap()).unwrap();
     assert_eq!(&config_query.token_contract.unwrap(), &token_contract);
-    
+
     //make sure the other configs are still the same.
     assert_eq!(&config_query.reward_contract.unwrap(), &reward_contract);
     assert_eq!(&config_query.owner, &owner);
@@ -2492,7 +2455,6 @@ pub fn proper_update_config() {
     let new_owner_info = mock_info(new_owner.as_ref(), &[]);
     let res = execute(deps.as_mut(), mock_env(), new_owner_info, update_config).unwrap();
     assert_eq!(res.messages.len(), 0);
-
 }
 
 #[test]
@@ -2509,15 +2471,11 @@ fn proper_update_global_index_with_airdrop() {
     let token_contract = "token".to_string();
     let reward_contract = "reward".to_string();
 
-    init(
-        &mut deps,
-        owner,
-        reward_contract,
-        token_contract,
-    );
+    init(&mut deps, owner, reward_contract, token_contract);
 
     // register_validator
-    deps.querier.with_validators(&[(&validator.address, Uint128::zero())]);
+    deps.querier
+        .with_validators(&[(&validator.address, Uint128::zero())]);
 
     // bond
     do_bond(deps.as_mut(), addr1.clone(), bond_amount, validator.clone());

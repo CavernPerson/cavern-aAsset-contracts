@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Decimal256, Deps, Order, StdResult, Storage, Uint128, CanonicalAddr};
+use cosmwasm_std::{Addr, CanonicalAddr, Decimal256, Deps, Order, StdResult, Storage, Uint128};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

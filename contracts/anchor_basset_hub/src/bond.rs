@@ -1,26 +1,20 @@
-use cosmwasm_std::Coin;
-use cosmwasm_std::QueryRequest;
 use crate::contract::{query_total_issued, slashing};
 use crate::math::decimal_division;
 use crate::state::{CONFIG, CURRENT_BATCH, PARAMETERS, STATE};
 use basset::hub::State;
+use cosmwasm_std::Coin;
+use cosmwasm_std::QueryRequest;
 use cosmwasm_std::{
     attr, to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, StakingMsg, StdError,
-    StdResult, Uint128, WasmMsg, WasmQuery
+    StdResult, Uint128, WasmMsg, WasmQuery,
 };
 use cw20::Cw20ExecuteMsg;
-
 
 use lido_terra_validators_registry::common::calculate_delegations;
 use lido_terra_validators_registry::msg::QueryMsg as QueryValidators;
 use lido_terra_validators_registry::registry::ValidatorResponse;
 
-pub fn execute_bond(
-    mut deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-) -> StdResult<Response> {
-
+pub fn execute_bond(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
     let params = PARAMETERS.load(deps.storage)?;
     let coin_denom = params.underlying_coin_denom;
     let threshold = params.er_threshold;
@@ -116,9 +110,7 @@ pub fn execute_bond(
     let config = CONFIG.load(deps.storage)?;
     let token_address = config
         .token_contract
-        .ok_or_else(|| StdError::generic_err(
-            "the token contract must have been registered",
-        ))?
+        .ok_or_else(|| StdError::generic_err("the token contract must have been registered"))?
         .to_string();
 
     external_call_msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
@@ -127,10 +119,12 @@ pub fn execute_bond(
         funds: vec![],
     }));
 
-    Ok(Response::new().add_messages(external_call_msgs).add_attributes(vec![
-        attr("action", "mint"),
-        attr("from", sender),
-        attr("bonded", payment.amount),
-        attr("minted", mint_amount_with_fee),
-    ]))
+    Ok(Response::new()
+        .add_messages(external_call_msgs)
+        .add_attributes(vec![
+            attr("action", "mint"),
+            attr("from", sender),
+            attr("bonded", payment.amount),
+            attr("minted", mint_amount_with_fee),
+        ]))
 }

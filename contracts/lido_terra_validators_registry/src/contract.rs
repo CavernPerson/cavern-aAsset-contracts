@@ -44,8 +44,10 @@ pub fn instantiate(
 
     for v in msg.registry {
         // We verify the validator is registered as such
-        if deps.querier.query_validator(&v.address)?.is_none(){
-            return Err(StdError::generic_err("Address not registered as a valid validator"));
+        if deps.querier.query_validator(&v.address)?.is_none() {
+            return Err(StdError::generic_err(
+                "Address not registered as a valid validator",
+            ));
         }
         REGISTRY.save(deps.storage, v.address.as_str().as_bytes(), &v)?;
     }
@@ -115,8 +117,10 @@ pub fn add_validator(
         return Err(StdError::generic_err("unauthorized"));
     }
     // We verify the validator is registered as such
-    if deps.querier.query_validator(&validator.address)?.is_none(){
-        return Err(StdError::generic_err("Address not registered as a valid validator"));
+    if deps.querier.query_validator(&validator.address)?.is_none() {
+        return Err(StdError::generic_err(
+            "Address not registered as a valid validator",
+        ));
     }
 
     REGISTRY.save(
@@ -192,8 +196,7 @@ pub fn remove_validator(
                 funds: vec![],
             }));
 
-            let msg = UpdateGlobalIndex {
-            };
+            let msg = UpdateGlobalIndex {};
             messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: hub_address.into_string(),
                 msg: to_binary(&msg)?,

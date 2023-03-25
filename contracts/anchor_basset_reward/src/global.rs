@@ -11,7 +11,6 @@ use crate::swap::create_swap_msgs;
 #[allow(clippy::if_same_then_else)]
 #[allow(clippy::needless_collect)]
 pub fn execute_swap(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
-    
     let config = read_config(deps.storage)?;
 
     if info.sender.as_str() != config.hub_contract {
@@ -30,14 +29,13 @@ pub fn execute_swap(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Res
         if coin.denom == reward_denom.clone() || !denoms.contains(&coin.denom) {
             continue;
         }
-        
+
         messages.append(&mut create_swap_msgs(
             deps.as_ref(),
             env.clone(),
             coin,
             reward_denom.to_string(),
         )?);
-        
     }
 
     let res = Response::new()

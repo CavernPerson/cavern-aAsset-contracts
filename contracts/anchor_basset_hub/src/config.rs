@@ -1,11 +1,8 @@
-use crate::state::{
-    Parameters, CONFIG,
-    PARAMETERS,
-};
-use basset::hub::{Config};
+use crate::state::{Parameters, CONFIG, PARAMETERS};
+use basset::hub::Config;
 use cosmwasm_std::{
-    attr, CosmosMsg, Decimal, DepsMut, DistributionMsg, Env, MessageInfo,
-    Response, StdError, StdResult,
+    attr, CosmosMsg, Decimal, DepsMut, DistributionMsg, Env, MessageInfo, Response, StdError,
+    StdResult,
 };
 
 /// Update general parameters
@@ -37,7 +34,7 @@ pub fn execute_update_params(
         reward_denom: params.reward_denom,
     };
 
-    if new_params.peg_recovery_fee > Decimal::one(){
+    if new_params.peg_recovery_fee > Decimal::one() {
         return Err(StdError::generic_err(
             "peg_recovery_fee can not be greater than 1",
         ));

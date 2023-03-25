@@ -1,9 +1,11 @@
-use cosmwasm_std::Uint128;
-use basset::dex_router::{SimulateSwapOperationsResponse, QueryMsg as SwapQueryMsg, SwapOperation, AssetInfo};
-use cosmwasm_std::from_binary;
+use basset::dex_router::{
+    AssetInfo, QueryMsg as SwapQueryMsg, SimulateSwapOperationsResponse, SwapOperation,
+};
 use basset::hub::Config;
+use cosmwasm_std::from_binary;
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::Empty;
+use cosmwasm_std::Uint128;
 use cosmwasm_std::{
     from_slice, to_binary, Api, Coin, ContractResult, OwnedDeps, Querier, QuerierResult,
     QueryRequest, SystemError, SystemResult, WasmQuery,
@@ -69,7 +71,10 @@ impl WasmMockQuerier {
                                 api.addr_validate(&String::from(MOCK_TOKEN_CONTRACT_ADDR))
                                     .unwrap(),
                             ),
-                            validators_registry_contract: Some(api.addr_validate(&String::from(MOCK_REGISTRY_CONTRACT_ADDR)).unwrap()),
+                            validators_registry_contract: Some(
+                                api.addr_validate(&String::from(MOCK_REGISTRY_CONTRACT_ADDR))
+                                    .unwrap(),
+                            ),
                             /*
                             airdrop_registry_contract: Some(
                                 api.addr_validate(&String::from("airdrop")).unwrap(),
@@ -84,72 +89,101 @@ impl WasmMockQuerier {
                     unimplemented!()
                 }
             }
-            QueryRequest::Wasm(WasmQuery::Smart {
-                contract_addr,
-                msg,
-            }) => {
+            QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }) => {
                 if *contract_addr == "astroport_addr" {
                     match from_binary(msg).unwrap() {
                         SwapQueryMsg::SimulateSwapOperations {
-                            offer_amount, operations
+                            offer_amount,
+                            operations,
                         } => {
                             #[allow(clippy::collapsible_match)]
-                            if let SwapOperation::AstroSwap{offer_asset_info, ..} = operations[0].clone() {
-                                if let AssetInfo::NativeToken{denom: x} = offer_asset_info{
-                                    if x == *"mnt"{
-                                        return SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                            if let SwapOperation::AstroSwap {
+                                offer_asset_info, ..
+                            } = operations[0].clone()
+                            {
+                                if let AssetInfo::NativeToken { denom: x } = offer_asset_info {
+                                    if x == *"mnt" {
+                                        return SystemResult::Err(SystemError::InvalidRequest {
+                                            error: "not covered".to_string(),
+                                            request: msg.clone(),
+                                        });
                                     }
                                 }
                             }
-                            SystemResult::Ok(
-                                ContractResult::from(to_binary(&SimulateSwapOperationsResponse {
-                                    amount: offer_amount * Uint128::from(9u128) / Uint128::from(10u128) 
-                                }))
-                            )
+                            SystemResult::Ok(ContractResult::from(to_binary(
+                                &SimulateSwapOperationsResponse {
+                                    amount: offer_amount * Uint128::from(9u128)
+                                        / Uint128::from(10u128),
+                                },
+                            )))
                         }
-                        _ => SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                        _ => SystemResult::Err(SystemError::InvalidRequest {
+                            error: "not covered".to_string(),
+                            request: msg.clone(),
+                        }),
                     }
-                } else if *contract_addr == "phoenix_addr"  {
+                } else if *contract_addr == "phoenix_addr" {
                     match from_binary(msg).unwrap() {
                         SwapQueryMsg::SimulateSwapOperations {
-                            offer_amount, operations
+                            offer_amount,
+                            operations,
                         } => {
                             #[allow(clippy::collapsible_match)]
-                            if let SwapOperation::TokenSwap{offer_asset_info, ..} = operations[0].clone() {
-                                if let AssetInfo::NativeToken{denom: x} = offer_asset_info{
-                                    if x == *"mnt"{
-                                        return SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                            if let SwapOperation::TokenSwap {
+                                offer_asset_info, ..
+                            } = operations[0].clone()
+                            {
+                                if let AssetInfo::NativeToken { denom: x } = offer_asset_info {
+                                    if x == *"mnt" {
+                                        return SystemResult::Err(SystemError::InvalidRequest {
+                                            error: "not covered".to_string(),
+                                            request: msg.clone(),
+                                        });
                                     }
                                 }
                             }
-                            SystemResult::Ok(
-                                ContractResult::from(to_binary(&SimulateSwapOperationsResponse {
-                                    amount: offer_amount * Uint128::from(11u128) / Uint128::from(10u128) 
-                                }))
-                            )
+                            SystemResult::Ok(ContractResult::from(to_binary(
+                                &SimulateSwapOperationsResponse {
+                                    amount: offer_amount * Uint128::from(11u128)
+                                        / Uint128::from(10u128),
+                                },
+                            )))
                         }
-                        _ => SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                        _ => SystemResult::Err(SystemError::InvalidRequest {
+                            error: "not covered".to_string(),
+                            request: msg.clone(),
+                        }),
                     }
                 } else if *contract_addr == "terraswap_addr" {
                     match from_binary(msg).unwrap() {
                         SwapQueryMsg::SimulateSwapOperations {
-                            offer_amount, operations
+                            offer_amount,
+                            operations,
                         } => {
                             #[allow(clippy::collapsible_match)]
-                            if let SwapOperation::TerraSwap{offer_asset_info, ..} = operations[0].clone() {
-                                if let AssetInfo::NativeToken{denom: x} = offer_asset_info{
-                                    if x == *"mnt"{
-                                        return SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                            if let SwapOperation::TerraSwap {
+                                offer_asset_info, ..
+                            } = operations[0].clone()
+                            {
+                                if let AssetInfo::NativeToken { denom: x } = offer_asset_info {
+                                    if x == *"mnt" {
+                                        return SystemResult::Err(SystemError::InvalidRequest {
+                                            error: "not covered".to_string(),
+                                            request: msg.clone(),
+                                        });
                                     }
                                 }
                             }
-                            SystemResult::Ok(
-                                ContractResult::from(to_binary(&SimulateSwapOperationsResponse {
-                                    amount: offer_amount
-                                }))
-                            )
+                            SystemResult::Ok(ContractResult::from(to_binary(
+                                &SimulateSwapOperationsResponse {
+                                    amount: offer_amount,
+                                },
+                            )))
                         }
-                        _ => SystemResult::Err(SystemError::InvalidRequest { error: "not covered".to_string(), request: msg.clone() })
+                        _ => SystemResult::Err(SystemError::InvalidRequest {
+                            error: "not covered".to_string(),
+                            request: msg.clone(),
+                        }),
                     }
                 } else {
                     unimplemented!()

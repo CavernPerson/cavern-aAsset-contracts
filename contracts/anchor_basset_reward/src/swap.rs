@@ -41,9 +41,8 @@ pub fn create_swap_msgs(
         .enumerate()
         .max_by_key(|&(_, item)| item);
 
-
-    if let Some((best_price_index, best_price)) = best_price_result{
-         if best_price == Uint128::zero() {
+    if let Some((best_price_index, best_price)) = best_price_result {
+        if best_price == Uint128::zero() {
             return Ok(vec![]);
         }
 
@@ -57,12 +56,10 @@ pub fn create_swap_msgs(
             stable_denom,
             best_price_marketplace,
         )?])
-    }else{
+    } else {
         Ok(vec![])
     }
 }
-
-   
 
 // Astroport router smart-contract
 // https://docs.astroport.fi/astroport/smart-contracts/astroport-contract-addresses
@@ -121,7 +118,11 @@ pub fn create_swap_message_for(
 
     into_cosmos_msg(
         AstroportExecuteMsg::ExecuteSwapOperations {
-            operations: vec![get_astroport_swap_operation(c.denom.clone(), stable_denom, message_type)],
+            operations: vec![get_astroport_swap_operation(
+                c.denom.clone(),
+                stable_denom,
+                message_type,
+            )],
             to: None,
             max_spread: None,
             minimum_receive: None,
