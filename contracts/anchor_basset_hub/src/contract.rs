@@ -6,6 +6,8 @@ use cosmwasm_std::{
     Env, MessageInfo, QueryRequest, Response, StakingMsg, StdError, StdResult, SubMsg, Uint128,
     WasmMsg, WasmQuery,
 };
+use lido_terra_validators_registry::msg::QueryMsg as ValidatorRegistryQueryMsg;
+use lido_terra_validators_registry::registry::ValidatorResponse;
 
 use crate::config::{execute_update_config, execute_update_params};
 
@@ -130,26 +132,40 @@ pub fn execute_redelegate_proxy(
     redelegations: Vec<(String, Coin)>,
 ) -> StdResult<Response> {
     let conf = CONFIG.load(deps.storage)?;
-    let validators_registry_contract = conf.validators_registry_contract.ok_or_else(|| {
-        StdError::generic_err("the validator registry contract must have been registered")
-    })?;
+    let validators_registry_contract =
+        conf.validators_registry_contract.clone().ok_or_else(|| {
+            StdError::generic_err("the validator registry contract must have been registered")
+        })?;
 
     if info.sender != validators_registry_contract && info.sender != conf.creator {
         return Err(StdError::generic_err("unauthorized"));
     }
 
-    let messages: Vec<CosmosMsg> = redelegations
+    let all_validators: Vec<ValidatorResponse> = deps.querier.query_wasm_smart(
+        conf.validators_registry_contract.unwrap().to_string(),
+        &ValidatorRegistryQueryMsg::GetValidatorsForDelegation {},
+    )?;
+
+    let all_validators_addr: Vec<String> =
+        all_validators.iter().map(|v| v.address.clone()).collect();
+
+    let messages: StdResult<Vec<CosmosMsg>> = redelegations
         .into_iter()
         .map(|(dst_validator, amount)| {
-            cosmwasm_std::CosmosMsg::Staking(StakingMsg::Redelegate {
+            if !all_validators_addr.contains(&dst_validator) {
+                return Err(StdError::generic_err(
+                    "Validator must be registered in the registry before redelegating",
+                ));
+            }
+            Ok(cosmwasm_std::CosmosMsg::Staking(StakingMsg::Redelegate {
                 src_validator: src_validator.clone(),
                 dst_validator,
                 amount,
-            })
+            }))
         })
         .collect();
 
-    let res = Response::new().add_messages(messages);
+    let res = Response::new().add_messages(messages?);
 
     Ok(res)
 }
