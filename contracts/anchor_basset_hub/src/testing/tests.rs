@@ -2039,7 +2039,6 @@ pub fn test_update_params() {
     //test with no swap denom.
     let update_prams = UpdateParams {
         epoch_period: Some(20),
-        unbonding_period: None,
         peg_recovery_fee: None,
         er_threshold: None,
     };
@@ -2073,7 +2072,6 @@ pub fn test_update_params() {
     //test with some swap_denom.
     let update_prams = UpdateParams {
         epoch_period: None,
-        unbonding_period: Some(3),
         peg_recovery_fee: Some(Decimal::one()),
         er_threshold: Some(Decimal::zero()),
     };
@@ -2087,7 +2085,7 @@ pub fn test_update_params() {
         from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Parameters {}).unwrap()).unwrap();
     assert_eq!(params.epoch_period, 20);
     assert_eq!(params.underlying_coin_denom, "uluna");
-    assert_eq!(params.unbonding_period, 3);
+    assert_eq!(params.unbonding_period, 2);
     assert_eq!(params.peg_recovery_fee, Decimal::one());
     assert_eq!(params.er_threshold, Decimal::zero());
     assert_eq!(params.reward_denom, "uusd");
@@ -2103,7 +2101,6 @@ pub fn proper_recovery_fee() {
 
     let update_prams = UpdateParams {
         epoch_period: None,
-        unbonding_period: None,
         peg_recovery_fee: Some(Decimal::from_ratio(Uint128::new(1), Uint128::new(1000))),
         er_threshold: Some(Decimal::from_ratio(Uint128::new(99), Uint128::new(100))),
     };
@@ -2372,7 +2369,6 @@ pub fn proper_update_config() {
     // new owner can send the owner related messages
     let update_prams = UpdateParams {
         epoch_period: None,
-        unbonding_period: None,
         peg_recovery_fee: None,
         er_threshold: None,
     };
@@ -2384,7 +2380,6 @@ pub fn proper_update_config() {
     //previous owner cannot send this message
     let update_prams = UpdateParams {
         epoch_period: None,
-        unbonding_period: None,
         peg_recovery_fee: None,
         er_threshold: None,
     };
