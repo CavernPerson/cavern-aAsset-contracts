@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::convert::TryInto;
 use std::collections::HashMap;
-
+use std::convert::TryInto;
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -31,7 +30,6 @@ use basset::hub::ExecuteMsg::{RedelegateProxy, UpdateGlobalIndex};
 
 const MAX_NUMBER_OF_VALIDATORS: u64 = 30;
 
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -47,8 +45,11 @@ pub fn instantiate(
         },
     )?;
 
-    if msg.registry.len() > 30{
-        return Err(StdError::generic_err(format!("Can't have more than {} registered validators", MAX_NUMBER_OF_VALIDATORS)));
+    if msg.registry.len() > 30 {
+        return Err(StdError::generic_err(format!(
+            "Can't have more than {} registered validators",
+            MAX_NUMBER_OF_VALIDATORS
+        )));
     }
 
     for v in msg.registry {
@@ -134,8 +135,15 @@ pub fn add_validator(
 
     // We verify the number of registered validators is not above MAX_NUMBER_OF_VALIDATORS
     let validators = query_validators(deps.as_ref())?;
-    if validators.len() >= MAX_NUMBER_OF_VALIDATORS.try_into().map_err(|_|StdError::generic_err("Error parsing u64 to usize"))?{
-        return Err(StdError::generic_err(format!("Can't have more than {} registered validators", MAX_NUMBER_OF_VALIDATORS)));
+    if validators.len()
+        >= MAX_NUMBER_OF_VALIDATORS
+            .try_into()
+            .map_err(|_| StdError::generic_err("Error parsing u64 to usize"))?
+    {
+        return Err(StdError::generic_err(format!(
+            "Can't have more than {} registered validators",
+            MAX_NUMBER_OF_VALIDATORS
+        )));
     }
 
     REGISTRY.save(
