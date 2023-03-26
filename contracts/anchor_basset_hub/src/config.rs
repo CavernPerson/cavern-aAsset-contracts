@@ -13,7 +13,6 @@ pub fn execute_update_params(
     _env: Env,
     info: MessageInfo,
     epoch_period: Option<u64>,
-    unbonding_period: Option<u64>,
     peg_recovery_fee: Option<Decimal>,
     er_threshold: Option<Decimal>,
 ) -> StdResult<Response> {
@@ -28,7 +27,7 @@ pub fn execute_update_params(
     let new_params = Parameters {
         epoch_period: epoch_period.unwrap_or(params.epoch_period),
         underlying_coin_denom: params.underlying_coin_denom,
-        unbonding_period: unbonding_period.unwrap_or(params.unbonding_period),
+        unbonding_period: params.unbonding_period,
         peg_recovery_fee: peg_recovery_fee.unwrap_or(params.peg_recovery_fee),
         er_threshold: er_threshold.unwrap_or(params.er_threshold),
         reward_denom: params.reward_denom,

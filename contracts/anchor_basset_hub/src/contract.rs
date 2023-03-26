@@ -89,7 +89,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::CheckSlashing {} => execute_slashing(deps, env),
         ExecuteMsg::UpdateParams {
             epoch_period,
-            unbonding_period,
             peg_recovery_fee,
             er_threshold,
         } => execute_update_params(
@@ -97,7 +96,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
             env,
             info,
             epoch_period,
-            unbonding_period,
             peg_recovery_fee,
             er_threshold,
         ),

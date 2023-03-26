@@ -65,7 +65,6 @@ pub enum ExecuteMsg {
     /// update the parameters that is needed for the contract
     UpdateParams {
         epoch_period: Option<u64>,
-        unbonding_period: Option<u64>,
         peg_recovery_fee: Option<Decimal>,
         er_threshold: Option<Decimal>,
     },
