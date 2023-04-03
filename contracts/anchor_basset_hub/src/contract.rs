@@ -430,6 +430,7 @@ fn query_unbond_requests_limitation(
     Ok(res)
 }
 
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
     Ok(Response::default())
 }
