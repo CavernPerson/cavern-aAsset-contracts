@@ -1,4 +1,3 @@
-use cosmwasm_std::entry_point;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::Coin;
 use cosmwasm_std::{
@@ -6,6 +5,7 @@ use cosmwasm_std::{
     Env, MessageInfo, QueryRequest, Response, StakingMsg, StdError, StdResult, SubMsg, Uint128,
     WasmMsg, WasmQuery,
 };
+use cosmwasm_std::{entry_point, Empty};
 use lido_terra_validators_registry::msg::QueryMsg as ValidatorRegistryQueryMsg;
 use lido_terra_validators_registry::registry::ValidatorResponse;
 
@@ -428,4 +428,8 @@ fn query_unbond_requests_limitation(
     let requests = all_unbond_history(deps.storage, start, limit)?;
     let res = AllHistoryResponse { history: requests };
     Ok(res)
+}
+
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+    Ok(Response::default())
 }
